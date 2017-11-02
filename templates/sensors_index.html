@@ -1,0 +1,109 @@
+<!doctype html>
+<html>
+<head>
+	<title>Controller</title>
+	<style>
+	button {
+		width: 40px;
+		height: 40px;
+		padding: 5px;
+		margin: 3px;
+	}
+	
+	p {
+		width: 20px;
+		height: 10px;
+		padding: 5px;
+	}
+	</style>
+	<script type="text/javascript" src="//ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
+	<script>
+		$("#led").on('click', function() {
+			if($("#led").hasClass('activated')) {
+				$("#led").val('OFF')
+					 .attr('value', 0)
+					 .removeClass('activated')
+					 .addClass('deactivated');
+				$.ajax({
+					type: 'GET',
+					url: '/LED/' + $("#led").val(),
+					contentType: 'application/x-www-form-urlencoded'
+				});
+			}else if($("#led").hasClass('deactivated')) {
+				$("#led").val('ON')
+					 .attr('value', 1)
+					 .removeClass('deactivated')
+					 .addClass('activated');
+				$.ajax({
+					type: 'GET',
+					url: '/LED/' + $("#led").val(),
+					contentType: 'application/x-www-form-urlencoded'
+				});
+			}
+		});
+
+		function sound_sensor() {
+			$.ajax({
+				url: '/SOUND',
+				dataType: 'var',
+				contentType: 'application/x-www-form-urlencoded',
+				success: function(data){
+					if(data == 0) {
+						$("#sound").css({
+							'background': 'red'
+						});
+					}else if(data == 1) {
+						$("#sound").css({
+							'background': 'green'
+						});
+					}
+				},
+				error: function(e){
+					console.log("소리 감지 실패");
+				}
+			});
+		}
+
+		function dht() {
+			$.ajax({
+				type: 'get',
+				url: '/DHT',
+				dataType: 'json',
+				contentType: 'application/json',
+				success: function(data) {
+					$("#temp").val(data[1]);
+					$("#humi").val(data[0]);
+				},
+				error: function(e) {
+					console.log("온습도 정보 받기 실패");
+				}
+			});
+		}
+
+		function loop() {
+			sound_sensor();
+			dht();
+		}
+
+		setInterval(function(){ loop() }, 100);
+	</script>
+</head>
+<body>
+	<table>
+		<tr>
+			<th>LED</th>
+			<th colspan="2"><button id="led" class="led deactivated" type="button">OFF</button></th>
+		</tr>
+		<tr>
+			<th>DHT</th>
+			<th>현재 기온<br><p id="temp"></p></th>
+			<th>현재 습도<br><p id="humi"></p></th>
+		</tr>
+		<tr>
+			<th>SOUND</th>
+			<th></th>
+			<th><div id="sound" style="width:50px; height:50px; background:green; border-radius: 3em;"></div></th>
+		</tr>
+	</table>
+</body>
+</html>

@@ -1,0 +1,35 @@
+<!doctype html>
+<html>
+<head>
+<title>test MySQL query</title>
+<script type="text/javascript" src="//ajax.googleapis.com/ajax/libs/jquery/1/jquery.min.js"></script>
+<script type="text/javascript">
+$(function() {
+	$.ajax({
+		type: 'POST',
+		url: '/GET/TITLE',
+		success: function(data) {
+			console.log("title : " + data);
+		},
+		error: function(e) {
+			console.log("Fail to get data.");
+		}
+	});
+
+	var url = "/GET/SETTING/default"
+	$.ajax({
+		type: 'POST',
+		url: url,
+		success: function(data) {
+			console.log("data : " + data);
+		},
+		error: function(e) {
+			console.log("Fail to get setting.");
+		}
+	});
+});
+</script>
+</head>
+<body>
+</body>
+</html>

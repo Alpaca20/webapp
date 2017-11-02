@@ -1,0 +1,146 @@
+#coding : utf-8
+import RPi.GPIO as GPIO
+import threading, time
+from flask import Flask, render_template, jsonify
+import sys
+import Adafruit_DHT
+#from DHT11_Python.dht11 import DHT11
+
+app = Flask(__name__)
+
+# pin setting
+LED = 12
+DHT = 16
+FLAME = 18
+
+# default temperature/humidity setting
+temp = 24
+humi = 50
+# temperature/humidity + - error
+temp_error = 3
+humi_error = 10
+
+temperature = None
+humidity = None
+
+# status
+LED_light = 20 # default light
+LEDS = "ON" # check LED ON or OFF
+PUMPS = "OFF" # check PUMP ON or OFF
+
+# GPIO setting
+def init():
+	GPIO.setwarnings(False)
+	GPIO.setmode(GPIO.BOARD)
+	GPIO.setup(LED, GPIO.OUT, initial=GPIO.LOW)
+	GPIO.setup(FLAME, GPIO.IN, pull_up_down=GPIO.PUD_UP)
+	#GPIO.setup(DHT, GPIO.OUT)
+
+def test(ev=None):
+	print("flame sensor is working!")
+
+def fireSensor():
+	GPIO.add_event_detect(FLAME, GPIO.FALLING, callback=test)
+
+def loop():
+	time.sleep(1000)
+	if(temp > temperature):
+		if(LED_light < 200):
+			LED_light += 10
+			LEDS = "ON"
+		GPIO.output(LED, LED_light)
+	elif(temp < temperature):
+		if(LED_light > 0):
+			LED_light -= 10
+		elif(LED_light == 0):
+			LEDS = "OFF"
+		GPIO.output(LED, LED_light)
+	if(humi > humidity):
+		if((humidity - humi_error) <= humi):
+			PUMPS = "ON"
+			#GPIO.output()
+	elif(humi < humidity):
+		if((humidity + humi_error) >= humi):
+			PUMPS = "OFF"
+			#GPIO.output()
+
+#t1 = threading.Thread(target=loop)
+
+#t1.start()
+
+
+@app.route('/')
+def main():
+	status = (temp, humi, LEDS, PUMPS)
+
+	return render_template('index.html', status = status)
+
+@app.route('/GET/dht_Data')
+def DHT():
+	instance = DHT11(DHT)
+	result = instance.read()
+	
+
+	temperature = result.temperature
+	humidity = result.humidity
+
+	return jsonify(temperature = temperature, humidity = humidity)
+
+@app.route('/GET/STATUS')
+def state():
+	if(LED_light > 0):
+		LEDS = "ON"
+	elif(LED_light == 0):
+		LEDS = "OFF"
+	else:
+		LEDS = "ON"
+
+	if(humi > humidity):
+		PUMPS = "ON"
+	elif(humi <= humidity):
+		PUMPS = "OFF"
+
+	status = (temp, humi, LEDS, PUMPS)
+
+	return jsonify(status=status)
+
+@app.route('/HUMI/<setting>')
+def setHumi(setting=None):
+	if setting == "UP":
+		humi += 1
+	elif setting == "DOWN":
+		humi -= 1
+	
+	return humi
+
+@app.route('/TEMP/<setting>')
+def setTemp(setting=None):
+	if setting == "UP":
+		temp += 1
+	elif setting == "DOWN":
+		temp -= 1
+
+	return temp
+	
+#test route
+@app.route('/<dht_error>/<value>')
+def setError(dht_error=None, value=None):
+	if(dht_error == "TEMP_ERROR"):
+		if(value == "UP"):
+			temp_error += 1
+		elif(value == "DOWN"):
+			temp_error -= 1
+
+		return temp_error
+
+	elif(dht_error == "HUMI_ERROR"):
+		if(value == "UP"):
+			humi_error += 1
+		elif(value == "DOWN"):
+			humi_error -= 1
+
+		return humi_error
+
+
+if(__name__ == "__main__"):
+	app.run(debug=True, host='0.0.0.0', port=8888)

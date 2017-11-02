@@ -1,0 +1,284 @@
+<!doctype html>
+<html lang="utf-8">
+<head>
+<meta charset="UTF-8">
+<title>관리화면</title>
+<style>
+@import url(http://fonts.googleapis.com/earlyaccess/jejugothic.css);
+* {
+	font-family: 'Jeju Gothic', serif;
+	font-weight: 400;
+	font-size: 20;
+}
+html, body {
+	width: 100%;
+	margin: 0;
+	padding: 0;
+}
+.header {
+	top: 0;
+	width: 100%;
+	height: 56px;
+	background: rgb(130, 130, 130);
+	box-shadow: 0px 0px 15px #888888;
+}
+.header span,
+.header button {
+	top: 0;
+}
+.header span {
+	float: left;
+	margin: 5px 0 0 5px;
+}
+.header button {
+	width: 70px;
+	height: 45px;
+	float: right;
+	margin: 5px 5px 0 0;
+}
+.container {
+	height: 100%;
+}
+button {
+	width: 100px;
+	height: 50px;
+	padding: 3px;
+}
+th {
+	padding: 8px;
+}
+
+#times {
+	color: rgb(255,255,255);
+	font-size: 0.8em;
+	border-color: rgb(60, 60, 60, 0.2);
+	background: rgba(0,0,0,0.2);
+	border-radius: 5px;
+	padding: 5px;
+	margin: 8px 0 0 8px;
+	position: absolute;
+	box-shadow: 0px 0px 10px rgba(100, 100, 100, 0.5);
+}
+
+#setting {
+	border-radius: 8px;
+}
+
+#display {
+	width: 70%;
+	height: 50%;
+	margin-top: 35%;
+}
+
+#title {
+	color: rgb(255, 255, 255);
+	margin-left: 45%;
+	margin-top: 15px;
+	position: absolute;
+}
+</style>
+<script type="text/javascript" src="//ajax.googleapis.com/ajax/libs/jquery/1/jquery.min.js"></script>
+<script>
+$(function() {
+	getDate();
+	getStatus();
+	getDHT_Data();
+});
+
+function getDHT_Data() {
+	$.ajax({
+		type: 'POST',
+		url: '/GET/dht_Data',
+		data: '',
+		success: function(data) {
+			console.log(data);
+			var temp = "관측 오류";
+
+			if(data.temperature == null || data.temperature == 9999) {
+				$("#temperature").empty()
+						 .css({ 'color': 'grey' })
+						 .append(temp);
+			} else{
+				$("#temperature").empty()
+						 .css({ 'color': 'black'})
+						 .append(data.temperature + "℃");
+			}
+
+			if(data.humidity == null || data.humidity == 9999) {
+				$("#humidity").empty()
+					      .css({ 'color': 'grey' })
+					      .append(temp);
+			} else {
+				$("#humidity").empty()
+					      .css({ 'color': 'black' })
+					      .append(data.humidity + "g/㎥");
+			}
+		},
+		error: function(e) {
+			console.log("Fail to get DHT data.");
+			var temp = "연결 오류";
+
+			$("#temperature").empty()
+					 .css({ 'color': 'grey' })
+					 .append(temp);
+
+			$("#humidity").empty()
+				      .css({ 'color': 'grey' })
+				      .append(temp);
+		}
+	});
+}
+
+function getStatus() {
+	$.ajax({
+		type: 'POST',
+		url: '/GET/STATUS',
+		data: '',
+		success: function(data) {
+			console.log(data);
+			var temp;
+
+			$("#temp").empty()
+				  .css({ 'color': 'black' })
+				  .append(data.temp + "℃");
+
+			$("#humi").empty()
+				  .css({ 'color': 'black' })
+				  .append(data.humi + "g/㎥");
+
+			if(data.led_check == 1) {
+			       $("#led_check").css({ 'color': 'green' });
+			       temp = "가동중"
+			}else if(data.led_check == 0) {
+			       $("#led_check").css({ 'color': 'red' });
+			       temp = "미가동"
+			}
+			$("#led_check").empty()
+				       .append(temp);
+
+			if(data.pump_check == 1) {
+			       $("#pump_check").css({ 'color': 'green' });
+			       temp = "가동중"
+			}else if(data.pump_check == 0) {
+			       $("#pump_check").css({ 'color': 'red' });
+			       temp = "미가동"
+			}
+			$("#pump_check").empty()
+					.append(temp);
+
+			if(data.moisture_check == 1) {
+			       $("#moisture_check").css({ 'color': 'green' });
+			       temp = "작동중"
+			}else if(data.moisture_check == 0) {
+			       $("#moisture_check").css({ 'color': 'red' });
+			       temp = "미작동"
+			}
+			$("#moisture_check").empty()
+					    .append(temp);
+			
+//			setTimeout(getStatus, 1000);
+		},
+		error: function(e) {
+			console.log("Fail to get data.");
+			var temp = "연결 오류"
+
+			$("#temp").empty()
+				  .css({ 'color': 'grey' })
+				  .append(temp);
+
+			$("#humi").empty()
+				  .css({ 'color': 'grey' })
+				  .append(temp);
+
+			$("#led_check").empty()
+				       .css({ 'color': 'grey' })
+				       .append(temp);
+
+			$("#pump_check").empty()
+					.css({ 'color': 'grey' })
+					.append(temp);
+
+			$("#moisture_check").empty()
+					.css({ 'color': 'grey' })
+					.append(temp);
+		}
+	});
+}
+
+function getDate() {
+	var year, month, day, hour, min, sec, temp;
+	var date = new Date();
+
+	year = date.getFullYear();
+	month = date.getMonth() + 1;
+	day = date.getDate();
+	hour = date.getHours();
+	min = date.getMinutes();
+	if(min <10) {
+		min = "0" + min;
+	}
+	sec = date.getSeconds();
+	
+
+	temp = year + " / " + month + " / " + day;
+	$("#date").empty()
+		  .append(temp);
+	
+	if((sec % 2) == 1) {
+		temp = hour + " &#58; " + min;
+	}else{
+		temp = hour + "&nbsp; &nbsp;" + min;
+	}
+	
+	$("#time").empty()
+		  .append(temp);
+}
+
+function setting() {
+	location.href = "/setting";
+}
+
+setInterval(function(){ getDate() }, 1000);
+setInterval(function(){ getStatus() }, 1000);
+setInterval(function(){ getDHT_Data() }, 1000);
+
+</script>
+</head>
+<body>
+<div class="header">
+	<span id="times" align="center">
+		<label id="date">0000 / 00 / 00</label><br>
+		<label id="time">00:00</label>
+	</span>
+	<span id="title">관리화면</span>
+	<button type="button" id="setting" onclick="setting()">온/습도<br />설정</button>
+</div>
+<div class="container" align="center">
+	<table id="display">
+		<tr>
+			<th colspan="3">현재<br />온 도</th>
+			<th colspan="3">현재<br />습 도</th>
+			<th colspan="3">설정<br />온 도</th>
+			<th colspan="3">설정<br />습 도</th>
+		</tr>
+		<tr>
+			<th colspan="3"><label id="temperature"></label></th>
+			<th colspan="3"><label id="humidity"></label></th>
+			<th colspan="3"><label id="temp"></label></th>
+			<th colspan="3"><label id="humi"></label></th>
+		</tr>
+		<tr><th colspan="12"></th></tr>
+		<tr>
+			<th colspan="4">L E D</th>
+			<th colspan="4">수 분</th>
+			<th colspan="4">펌 프</th>
+		</tr>
+		<tr>
+			<th colspan="4"><label id="led_check"></label></th>
+			<th colspan="4"><label id="moisture_check"></label></th>
+			<th colspan="4"><label id="pump_check"></label></th>
+		</tr>
+	</table>
+</div>
+</body>
+</html>

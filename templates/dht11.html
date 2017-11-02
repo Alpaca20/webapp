@@ -1,0 +1,42 @@
+<!doctype html>
+<html>
+<head>
+	<script src="//ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
+	<script type="text/javascript">
+		var tem, humi, tems=new Array(), humis=new Array();
+		
+		function dht11(){
+			
+			$.ajax({
+				type: 'GET',
+				url: '/ajax',
+				async: 'false',
+				datatype: 'json',
+				success: function(data){
+					tem = data.temperature;
+					humi = data.humidity;
+					if(tems.length < 10) {
+						tems.push(tem);
+						humis.push(humi);
+					}else{
+						tems.shift();
+						humis.shift();
+						tems.push(tem);
+						humis.push(humi);
+					}
+				},
+				error: function(e){
+					console.log('데이터 받기 실패');
+				}
+			});
+			
+			for(var i=0; i<tems.length; i++) {
+				document.write('온도: ' + tems[i] + 'C, 습도: ' + humis[i] + '%<br />');
+			}
+			
+		}
+		
+		setInterval(function(){ $("body").empty(); dht11(); }, 1000);
+	</script>
+</head>
+</html>

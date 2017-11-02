@@ -1,0 +1,538 @@
+<!doctype html>
+<html lang="utf-8">
+<head>
+<meta charset="UTF-8">
+<title>Farm Controller</title>
+<style>
+@import url(http://fonts.googleapis.com/earlyaccess/jejugothic.css);
+* {
+	font-family: 'Jeju Gothic', serif;
+	font-weight: 400;
+	font-size: 20;
+}
+html, body {
+	width: 100%;
+	margin: 0;
+	padding: 0;
+}
+ul {
+	list-style-type: none;
+	text-align: center;
+	padding-left: 0;
+}
+ul li {
+	padding: 10px;
+}
+div button {
+	width: 70px;
+	height: 40px;
+	margin: 10px 10px 10px 0px;
+}
+.header {
+	top: 0;
+	width: 100%;
+	height: 56px;
+	background: rgb(130, 130, 130);
+	box-shadow: 0px 0px 15px #888888;
+}
+.header span,
+.header button {
+	top: 0;
+}
+.header span {
+	float: left;
+	margin: 5px 0 0 5px;
+}
+.header button {
+	width: 70px;
+	height: 45px;
+	float: right;
+	margin: 5px 5px 0 0;
+}
+.notSelected {
+	background: rgb(255, 255, 255)
+}
+
+#settingList li {
+	cursor: pointer;
+	
+}
+
+button {
+	width: 30px;
+	height: 30px;
+	padding: 3px;
+	border-radius: 8px;
+}
+thead th {
+	padding: 0px 5px 5px 0px;
+}
+#times {
+	color: rgb(255,255,255);
+	font-size: 0.8em;
+	border-color: rgb(60, 60, 60, 0.2);
+	background: rgba(0, 0, 0, 0.2);
+	border-radius: 5px;
+	padding: 5px;
+	margin: 8px 0 0 8px;
+	position: absolute;
+	box-shadow: 0px 0px 10px rgba(100, 100, 100, 0.5);
+}
+#title {
+	color: rgb(255, 255, 255);
+	margin-left: 45%;
+	margin-top: 15px;
+	position: absolute;
+}
+#display {
+	margin-top: 20%;
+}
+
+#loadDisplay {
+	position: absolute;
+	background: rgb(255, 255, 255);
+	width: 400px;
+	height: 500px;
+	top: 0;
+	bottom: 0;
+	left: 0;
+	right: 0;
+	margin: auto;
+	box-shadow: 0px 0px 15px #888888;
+	border-radius: 10px;
+	z-index: 10;
+}
+#block {
+	position: absolute;
+	background: rgba(60, 60, 60, 0.3);
+	width: 100%;
+	height: 100%;
+	top: 0;
+	bottom: 0;
+	left: 0;
+	right: 0;
+	margin: auto;
+	z-index: 8;
+}
+#inputTitle {
+	position: absolute;
+	background: rgb(255, 255, 255);
+	width: 250px;
+	height: 180px;
+	top: 0;
+	bottom: 0;
+	left: 0;
+	right: 0;
+	margin: auto;
+	border-radius: 8px;
+	box-shadow: 0px 0px 15px #888888;
+	z-index: 5;
+}
+</style>
+<script type="text/javascript" src="//ajax.googleapis.com/ajax/libs/jquery/1/jquery.min.js"></script>
+<script>
+var year, month, day, hour, min;
+var title;
+
+$(function() {
+	$('#loadDisplay').css({ 'display': 'none' });
+	$('#block').css({ 'display': 'none' });
+	$('#inputTitle').css({ 'display': 'none' });
+
+	temp = {{temp}};
+	temp_error = {{temp_error}};
+	humi = {{humi}};
+	humi_error = {{humi_error}};
+	mois = {{mois}}
+
+	$('#temp').val(temp)
+		  .text(temp);
+	$('#temp_error').val(temp_error)
+			.text(temp_error);
+	$('#humi').val(humi)
+		  .text(humi);
+	$('#humi_error').val(humi_error)
+			.text(humi_error);
+	$('#moisture').val(mois)
+			.text(mois);
+
+	$('#settingList').find("li").on('click', function() {
+		if($(this).hasClass('notSelected')) {
+			$('.notSelected').removeClass('onSelected')
+					 .css({ 'background': 'rgba(255, 255, 255, 0)' });
+			$(this).addClass('onSelected')
+			       .css({ 'background': 'rgba(51, 153, 255, 0.5)' });
+			title = $(this).text();
+			console.log(title);
+		}
+	});
+
+	getDate();
+});
+
+function getDate() {
+	var sec;
+	var date = new Date();
+
+	year = date.getFullYear();
+	month = date.getMonth() + 1;
+	day = date.getDate();
+	hour = date.getHours();
+	min = date.getMinutes();
+	if(min < 10) {
+		min = "0" + min;
+	}
+	sec = date.getSeconds();
+	
+	var temp = year + " / " + month + " / " + day;
+	$("#date").empty()
+		  .append(temp);
+
+	if((sec % 2) == 1) {
+		temp = hour + " &#58; " + min
+	}else{
+		temp = hour + "&nbsp; &nbsp;" + min
+	}
+	$("#time").empty()
+		  .append(temp);
+}
+
+function temp_value(state) {
+	var value = $('#temp').val() * 1;
+
+	if(state == 'up') {
+		if(value < 100 && value >= 0)
+			value += 1;
+		$('#temp').val(value)
+			  .text(value);
+	}else if(state == 'down') {
+		if(value <= 100 && value > 0)
+			value -= 1;
+		$('#temp').val(value)
+			  .text(value);
+	}
+}
+
+function temp_error_value(state) {
+	var value = $('#temp_error').val() * 1;
+
+	if(state == 'up') {
+		if((value < $('#temp').val() / 2) && value >= 0)
+			value += 1;
+		$('#temp_error').val(value)
+				.text(value);
+	}else if(state == 'down') {
+		if((value <= $('#temp').val() / 2) && value > 0)
+			value -= 1;
+		$('#temp_error').val(value)
+				.text(value);
+	}
+}
+
+function humi_value(state) {
+	var value = $('#humi').val() * 1;
+
+	if(state == 'up') {
+		if(value < 100 && value >= 0)
+			value += 1;
+		$('#humi').val(value)
+			  .text(value);
+	}else if(state == 'down') {
+		if(value <= 100 && value > 0)
+			value -= 1;
+		$('#humi').val(value)
+			  .text(value);
+	}
+}
+
+function humi_error_value(state) {
+	var value = $('#humi_error').val() * 1;
+
+	if(state == 'up') {
+		if((value < $('#humi').val() / 2) && value >= 0)
+			value += 1;
+		$('#humi_error').val(value)
+				.text(value);
+	}else if(state == 'down') {
+		if((value <= $('#humi').val() / 2) && value > 0)
+			value -= 1;
+		$('#humi_error').val(value)
+				.text(value);
+	}
+}
+
+function moisture_value(state) {
+	var value = $('#moisture').val() * 1;
+
+	if(state == 'up') {
+		if(value < 1000 && value >= 0)
+			value += 100;
+		$('#moisture').val(value)
+			      .text(value);
+	}else if(state == 'down') {
+		if(value <= 1000 && value > 0)
+			value -= 100;
+		$('#moisture').val(value)
+			      .text(value);
+	}
+}
+
+function setData() {
+	var data = {'temp': $('#temp').val(),
+		 'temp_error': $('#temp_error').val(),
+		 'humi': $('#humi').val(),
+		 'humi_error': $('#humi_error').val(),
+		 'mois': $('#moisture').val()};
+
+	$.ajax({
+		type: 'POST',
+		url: '/PUT/SETTING_VALUE',
+		data: JSON.stringify(data),
+		contentType: 'application/json;charset=UTF-8',
+		success: function(data) {
+			console.log(data);
+		},
+		error: function(request, status, error) {
+			console.log("code:" + request.status + "\n" + "message:" + request.responseText + "\n" + "error:" + error);
+			console.log("Fail to set data.");
+		}
+	});
+}
+
+function saveSetting() {
+	var data, temp, temp_error, humi, humi_error, mois;
+
+	title = $('#settingTitle').val();
+	temp = $('#temp').val();
+	temp_error = $('#temp_error').val();
+	humi = $('#humi').val();
+	humi_error = $('#humi_error').val();
+	mois = $('#moisture').val();
+
+	data = {'title': title,
+		'temp': temp,
+		'temp_error': temp_error,
+		'humi': humi,
+		'humi_error': humi_error,
+		'mois': mois};
+
+	$.ajax({
+		type: 'POST',
+		url: '/PUT/SETTING',
+		contentType: 'application/json;charset=UTF-8',
+		data: JSON.stringify(data),
+		success: function(data) {
+			console.log(data);
+			if(data == 'ERROR') {
+				temp = '<div id="block_error" style="z-index: 900; width: 100%; height: 100%; position: absolute; background: rgba(60, 60, 60, 0.3);"></div>'
+					+'<div id="error" style="position: absolute; text-align: center; top: 0; bottom: 0; left: 0; right: 0; margin: auto; width: 200px; height: 150px; z-index: 1000; background: rgb(255, 255, 255); box-shadow: 0px 0px 15px #888888; border-radius: 8px;">'
+						+'<p><b>Error</b></p>'
+						+'<hr />'
+						+'<label style="font-size: 0.8em;">저장에 실패하였습니다.</label>'
+						+'<button type="button" onclick="exit()" style="margin-top: 20px;">확 인</button>'
+					+'</div>';
+				$('body').append(temp);
+			}
+		},
+		error: function(e) {
+			console.log("Fail to save setting.");
+		}
+	});
+
+	getTitleList();
+	
+	$('#block').css({ 'zIndex': '9' })
+}
+
+function afterSaveSetting() {
+	saveSetting();
+	$('#inputTitle').css({ 'display': 'none',
+				'zIndex': '5' });
+	$('#settingTitle').empty();
+}
+
+function openSetting() {
+	$('#loadDisplay').css({ 'display': 'block' });
+	$('#block').css({ 'display': 'block' });
+	getTitleList();
+}
+
+function getTitleList() {
+	var temp = '';
+
+	$.ajax({
+		type: 'POST',
+		url: '/GET/TITLES',
+		success: function(data) {
+			console.log(data);
+			if(data != 'ERROR') {
+				$('#settingList').empty();
+
+				for(var titles in data) {
+					temp += '<li class="notSelected">' + titles + '</li>';
+				}
+
+				if(temp != '') {
+					$('#settingList').append(temp);
+				}
+			}else{
+				temp = '<div id="block_error" style="z-index: 900; top: 0; bottom: 0; width: 100%; height: 100%; position: absolute; background: rgba(60, 60, 60, 0.3);"></div>'
+					+'<div id="error" style="position: absolute; text-align: center; top: 0; bottom: 0; left: 0; right: 0; margin: auto; width: 200px; height: 150px; z-index: 1000; background: rgb(255, 255, 255); box-shadow: 0px 0px 15px #888888; border-radius: 8px;">'
+						+'<p><b>Error</b></p>'
+						+'<hr />'
+						+'<label style="font-size: 0.8em;">목록을 불러오는데 실패하였습니다.</label>'
+						+'<button type="button" onclick="exit()" style="margin-top: 20px;">확 인</button>'
+					+'</div>';
+				$('body').append(temp);
+			}
+		},
+		error: function(e) {
+			console.log("Fail to load setting.");
+		}
+	});
+}
+
+function openInput() {
+	$('#inputTitle').css({ 'display': 'block',
+				'zIndex': '12' });
+	$('#block').css({ 'zIndex': '11' });
+}
+
+function cancelInput() {
+	$('#inputTitle').css({ 'display': 'none',
+				'zIndex': '5' });
+	$('#settingTitle').empty();
+	$('#block').css({ 'zIndex': '9' });
+}
+
+function exit() {
+	$('#loadDisplay').css({ 'display': 'none' });
+	$('#block').css({ 'display': 'none' });
+	$('#inputTitle').css({ 'display': 'none',
+				'zIndex': '5' });
+	$('#settingTitle').empty();
+	$('#block').css({ 'zIndex': '9' });
+	$('.onSelected').removeClass('onSelected');
+
+	$('#block_error').remove();
+	$('#error').remove();
+}
+
+function closeSetting() {
+	$('#loadDisplay').css({ 'display': 'none' });
+	$('#block').css({ 'display': 'none' });
+}
+
+function loadSetting() {
+	if(title != '' && title != null) {
+		var url = '/GET/SETTING/' + title;
+
+		$.ajax({
+			type: 'POST',
+			url: url,
+			success: function(data) {
+				console.log(data);
+			},
+			error: function(e) {
+				console.log("Fail to load setting.");
+			}
+		});
+	}
+}
+
+function setValue() {
+	setData();
+	location.href = "/";
+}
+
+function goHome() {
+	location.href = "/";
+}
+
+setInterval(function() { getDate() }, 1000);
+
+</script>
+</head>
+<body>
+<div class="header">
+	<span id="times" align="center">
+		<label id="date">0000/00/00</label><br>
+		<label id="time">00:00</label>
+	</span>
+	<span id="title">관리설정</span>
+	<button type="button" id="open" onclick="openSetting()">설 정</button>
+</div>
+<div class="container" align="center">
+	<div>
+		<table id="display" align="center">
+			<thead>
+				<tr>
+					<th>온도</th>
+					<th>온도<br />오 차</th>
+					<th>습도</th>
+					<th>습도<br />오 차</th>
+					<th>토양<br />습 도</th>
+				</tr>
+			</thead>
+			<tbody>
+				<tr>
+					<th><button type="button" onclick="temp_value('up')">∧</button></th>
+					<th><button type="button" onclick="temp_error_value('up')">∧</button></th>
+					<th><button type="button" onclick="humi_value('up')">∧</button></th>
+					<th><button type="button" onclick="humi_error_value('up')">∧</button></th>
+					<th><button type="button" onclick="moisture_value('up')">∧</button></th>
+				</tr>
+				<tr>
+					<th><label id="temp">0</label>℃</th>
+					<th>±<label id="temp_error">0</label></th>
+					<th><label id="humi">0</label>g/m³</th>
+					<th>±<label id="humi_error">0</label></th>
+					<th><label id="moisture">0</label></th>
+				</tr>
+				<tr>
+					<th><button type="button" onclick="temp_value('down')">∨</button></th>
+					<th><button type="button" onclick="temp_error_value('down')">∨</button></th>
+					<th><button type="button" onclick="humi_value('down')">∨</button></th>
+					<th><button type="button" onclick="humi_error_value('down')">∨</button></th>
+					<th><button type="button" onclick="moisture_value('down')">∨</button></th>
+				</tr>
+			</tbody>
+		</table>
+		<div style="margin: 0.5em;">
+			<button type="button" id="ok" onclick="setValue()">확 인</button>
+			<button type="button" id="back" onclick="goHome()">취 소</button>
+		</div>
+	</div>
+</div>
+<div id="block"></div>
+<div id="loadDisplay">
+	<div style="top: 0; width: 100%; height: 50px; text-align: right;">
+		<button type="button" id="close" onclick='closeSetting()' style='margin: 10px 10px 0px 0px;'>닫기</button>
+	</div>
+	<hr />
+	<div style="width: 100%; height: 68%;">
+		<ul id="settingList">
+			<li class="notSelected">default</li>
+			<li class="notSelected">click</li>
+			<li class="notSelected">click2</li>
+		</ul>
+	</div>
+	<hr />
+	<div style="bottom: 0; width: 100%; height: 50px; text-align: center; margin: 8px;">
+		<button type="button" id="save" onclick='openInput()' style='margin-right: 10px;'>저 장</button>
+		<button type="button" id="load" onclick='loadSetting()' style='margin-left: 10px;'>가져오기</button>
+	</div>
+</div>
+<div id="inputTitle">
+	<div align="center" style="width: 250px; height: 150px; top: 46%; left: 46%;">
+		<p>설정 값을 저장합니다.</p>
+		<hr />
+		<input type="text" id="settingTitle" placeholder="제목입력"" style="width: 180px; margin: 10px; padding: 5px; border-radius: 4px;">
+		<div align="center" style="margin: 20px;">
+			<button type="button" onclick="afterSaveSetting()" style="margin-right: 10px;">확인</button>
+			<button type="button" onclick="cancelInput()">취소</button>
+		</div>
+	</div>
+</div>
+</body>
+</html>

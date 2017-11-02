@@ -1,0 +1,11 @@
+<!doctype html>
+<h2><a href="/articles">Go to Home</a></h2>
+<h1>{{ id }}</h1>
+{% for item in articles %}
+	{% if item.id == id %}
+		{{ item.title }} <br>
+		{{ item.body }} <br>
+		{{ item.author }} <br>
+		{{ item.create_date }} <br>
+	{% endif %}
+{% endfor %}
